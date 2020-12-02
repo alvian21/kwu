@@ -106,18 +106,18 @@ exports.signUp = (req, res) => {
         },
 
         function hashPassword(index, callback) {
-            // try {
+            try {
                 var mykey = crypto.createCipher("aes-128-cbc", "mypassword");
                 var mystr = mykey.update(req.body.password, "utf8", "hex");
                 mystr += mykey.final("hex");
                 req.body.password = mystr;
                 callback(null, true);
-            // } catch (err) {
-            //     return callback({
-            //         code: "GENERAL_ERR",
-            //         data: err
-            //     });
-            // }
+            } catch (err) {
+                return callback({
+                    code: "GENERAL_ERR",
+                    data: err
+                });
+            }
         },
 
         function insert(index, callback) {
