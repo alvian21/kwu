@@ -29,6 +29,9 @@ module.exports = {
       cr_id: {
         type: Sequelize.INTEGER
       },
+      token:{
+        type: Sequelize.STRING
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE

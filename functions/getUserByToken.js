@@ -1,4 +1,4 @@
-const userModel = require("../models").user;
+const userModel = require("../models").User;
 const output = require("../functions/output.js");
 
 module.exports = (req, res, token, callback) => {
@@ -9,7 +9,9 @@ module.exports = (req, res, token, callback) => {
       }
     })
     .then(user => {
-      if (user) callback(null, user);
+      if (user){
+        callback(null, user);
+      }
       else callback(null, null);
     })
     .catch(err => {

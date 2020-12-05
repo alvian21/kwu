@@ -2,7 +2,6 @@ const async = require("async");
 const axios = require("axios");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-// const sharp = require("sharp");
 const path = require("path");
 const fs = require("fs");
 const userModel = require("../models/").User;
