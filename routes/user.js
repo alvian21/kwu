@@ -3,7 +3,8 @@ const express = require("express");
 const router = express.Router();
 const output = require("../functions/output");
 const getUserByToken = require("../functions/getUserByToken");
-const postController = require("../controllers/postController");
+const userController = require("../controllers/userController");
+const rolesController = require("../controllers/rolesController");
 
 //AUTH MIDDLEWARE
 router.use((req, res, next) => {
@@ -26,8 +27,9 @@ router.use((req, res, next) => {
   });
 });
 
-router.post("/create", postController.create);
-router.get("/show/:id", postController.show);
-router.put("/update/:id", postController.update);
-router.delete("/delete/:id", postController.delete);
+router.get(
+  "/",
+  rolesController.grantAccess("readAny", ["designer", "member"]),
+  userController.index
+);
 module.exports = router;

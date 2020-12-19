@@ -1,27 +1,11 @@
 const AccessControl = require("accesscontrol");
 const ac = new AccessControl();
 
-exports.roles = (function() {
-  ac.grant("member")
-    .readOwn("profile")
-    .readAny("event")
-    .readAny("blog");
+exports.roles = (function () {
+  ac.grant("member").readOwn("profile").readAny("post");
 
-  ac.grant("admin")
-    .extend("member")
-    .readAny("event")
-    .updateAny("event")
-    .deleteAny("event")
-    .createOwn("event")
-    .updateAny("profile")
-    .readAny("profile")
-    .deleteAny("profile")
-    .readAny("user")
-    .updateAny("user")
-    .deleteAny("user")
-    .readAny("blog")
-    .updateAny("blog")
-    .deleteAny("blog")
-    .createOwn("blog");
+  ac.grant("designer").readAny("post").createOwn("post");
+
+  ac.grant("admin").readAny("member").readAny("designer");
   return ac;
 })();
