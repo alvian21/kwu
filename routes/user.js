@@ -29,7 +29,12 @@ router.use((req, res, next) => {
 
 router.get(
   "/",
-  rolesController.grantAccess("readAny", ["designer", "member"]),
+  rolesController.grantAccess("readAny", "designer"),
+  userController.index
+);
+router.get(
+  "/",
+  rolesController.grantAccess("readAny", "member"),
   userController.index
 );
 module.exports = router;
