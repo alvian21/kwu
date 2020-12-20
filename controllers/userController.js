@@ -42,3 +42,35 @@ exports.index = (req, res) => {
     }
   );
 };
+
+exports.profile = (req, res) => {
+  async.waterfall(
+    [
+      function viewByProfile(callback) {
+        const user = req.user;
+        userModel
+          .findOne({ where: { id: user.id } })
+          .then((res) => {
+            if (res) {
+              return callback({
+                code: "OK",
+                data: res,
+              });
+            }
+          })
+          .catch((err) => {
+            return callback({
+              code: "ERR_DATABASE",
+              data: err,
+            });
+          });
+      },
+    ],
+    (err, result) => {
+      if (err) {
+        return output.print(req, res, err);
+      }
+      return output.print(req, res, result);
+    }
+  );
+};

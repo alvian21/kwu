@@ -27,6 +27,8 @@ router.use((req, res, next) => {
   });
 });
 
+router.get("/profile", userController.profile);
+
 router.get(
   "/",
   rolesController.grantAccess("readAny", "designer"),
