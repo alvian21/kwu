@@ -25,7 +25,7 @@ router.use((req, res, next) => {
     }
   });
 });
-
+router.get("/", postController.view);
 router.post("/create", postController.create);
 router.get("/show/:id", postController.show);
 router.put("/update/:id", postController.update);
