@@ -74,3 +74,34 @@ exports.profile = (req, res) => {
     }
   );
 };
+
+exports.detail = (req, res) => {
+  async.waterfall(
+    [
+      function viewById(callback) {
+        userModel
+          .findOne({ where: { id: req.params.id } })
+          .then((res) => {
+            if (res) {
+              return callback({
+                code: "OK",
+                data: res,
+              });
+            }
+          })
+          .catch((err) => {
+            return callback({
+              code: "ERR_DATABASE",
+              data: err,
+            });
+          });
+      },
+    ],
+    (err, result) => {
+      if (err) {
+        return output.print(req, res, err);
+      }
+      return output.print(req, res, result);
+    }
+  );
+};
