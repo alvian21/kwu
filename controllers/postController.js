@@ -8,6 +8,7 @@ const fs = require("fs");
 const base64ToImage = require('base64-to-image');
 const postModel = require("../models/").Post;
 const voteModel = require("../models/").Vote;
+const saveModel = require("../models/").Save;
 const isBase64 = require('is-base64');
 const output = require("../functions/output.js");
 const missingKey = require("../functions/missingKey");
@@ -108,19 +109,47 @@ exports.view = (req, res) => {
                 attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'votecount']],
             }).then(function (datavote) {
                 callback(null, res, datavote);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
             });
         },
 
-        function pushtoArray(res, datavote, callback) {
+        function getCountSave(res, datavote, callback) {
+            saveModel.findAll({
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'savecount']],
+            }).then(function (datasave) {
+                callback(null, res, datavote, datasave);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
+            });
+        },
+
+        function pushtoArray(res, datavote, datasave, callback) {
             const dataArray = [];
             res.map((data, index) => {
-                var getcount = 0;
+                var getcountvote = 0;
+                var getcountsave = 0;
                 datavote.map((datacount, indexcount) => {
                     const countvotegrup = datacount.dataValues;
                     if (countvotegrup.post_id == data.id) {
-                        getcount = countvotegrup.votecount;
+                        getcountvote = countvotegrup.votecount;
                     }
-                })
+                });
+
+                datasave.map((valuesave, indexsave) => {
+                    const countsavegroup = valuesave.dataValues;
+                    if (countsavegroup.post_id == data.id) {
+                        getcountsave = countsavegroup.savecount;
+                    }
+                });
+
                 const result = {
                     id: data.id,
                     user_id: data.user_id,
@@ -128,8 +157,8 @@ exports.view = (req, res) => {
                     category: data.category,
                     image: data.image,
                     description: data.description,
-                    vote: getcount,
-                    saved: 0,
+                    vote: getcountvote,
+                    saved: getcountsave,
                     createdAt: data.createdAt,
                     updatedAt: data.updatedAt
                 };
@@ -300,7 +329,6 @@ exports.delete = (req, res) => {
         function deleteImagebyId(index, callback) {
             fs.unlinkSync(path.resolve(process.env.CDN + "post/" + req.body.image), (err) => {
                 if (!err) {
-                    req.body.image = pathFile;
                     callback(null, true);
                 }
             })
