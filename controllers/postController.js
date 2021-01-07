@@ -3,9 +3,11 @@ const axios = require("axios");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const path = require("path");
+const { Sequelize, Op, Model, DataTypes } = require("sequelize");
 const fs = require("fs");
 const base64ToImage = require('base64-to-image');
 const postModel = require("../models/").Post;
+const voteModel = require("../models/").Vote;
 const isBase64 = require('is-base64');
 const output = require("../functions/output.js");
 const missingKey = require("../functions/missingKey");
@@ -90,10 +92,7 @@ exports.view = (req, res) => {
             postModel.findAll({ raw: true })
                 .then(res => {
                     if (res) {
-                        return callback({
-                            code: "OK",
-                            data: res
-                        })
+                        callback(null, res);
                     }
                 }).catch(err => {
                     return callback({
@@ -101,6 +100,45 @@ exports.view = (req, res) => {
                         data: err
                     });
                 });
+        },
+
+        function getCountVote(res, callback) {
+            voteModel.findAll({
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'votecount']],
+            }).then(function (datavote) {
+                callback(null, res, datavote);
+            });
+        },
+
+        function pushtoArray(res, datavote, callback) {
+            const dataArray = [];
+            res.map((data, index) => {
+                var getcount = 0;
+                datavote.map((datacount, indexcount) => {
+                    const countvotegrup = datacount.dataValues;
+                    if (countvotegrup.post_id == data.id) {
+                        getcount = countvotegrup.votecount;
+                    }
+                })
+                const result = {
+                    id: data.id,
+                    user_id: data.user_id,
+                    name: data.name,
+                    category: data.category,
+                    image: data.image,
+                    description: data.description,
+                    vote: getcount,
+                    saved: 0,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt
+                };
+                dataArray.push(result);
+            });
+            return callback({
+                code: "OK",
+                data: dataArray
+            })
         }
     ], (err, result) => {
         if (err) {
