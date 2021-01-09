@@ -9,6 +9,7 @@ const base64ToImage = require('base64-to-image');
 const postModel = require("../models/").Post;
 const voteModel = require("../models/").Vote;
 const saveModel = require("../models/").Save;
+const rateModel = require("../models/").Rate;
 const isBase64 = require('is-base64');
 const output = require("../functions/output.js");
 const missingKey = require("../functions/missingKey");
@@ -131,11 +132,27 @@ exports.view = (req, res) => {
             });
         },
 
-        function pushtoArray(res, datavote, datasave, callback) {
+        function getAvgRate(res, datavote, datasave, callback) {
+            rateModel.findAll({
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('avg', Sequelize.col('data')), 'avgrate']]
+            }).then(function (datarate) {
+                callback(null, res, datavote, datasave, datarate);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                })
+            })
+        },
+
+        function pushtoArray(res, datavote, datasave, datarate, callback) {
             const dataArray = [];
+
             res.map((data, index) => {
                 var getcountvote = 0;
                 var getcountsave = 0;
+                var getavgrate = 0;
                 datavote.map((datacount, indexcount) => {
                     const countvotegrup = datacount.dataValues;
                     if (countvotegrup.post_id == data.id) {
@@ -150,6 +167,13 @@ exports.view = (req, res) => {
                     }
                 });
 
+                datarate.map((valuerate, indexrate) => {
+                    const avgrategroup = valuerate.dataValues;
+                    if (avgrategroup.post_id == data.id) {
+                        getavgrate = avgrategroup.avgrate;
+                    }
+                });
+
                 const result = {
                     id: data.id,
                     user_id: data.user_id,
@@ -159,6 +183,7 @@ exports.view = (req, res) => {
                     description: data.description,
                     vote: getcountvote,
                     saved: getcountsave,
+                    rate: getavgrate,
                     createdAt: data.createdAt,
                     updatedAt: data.updatedAt
                 };
