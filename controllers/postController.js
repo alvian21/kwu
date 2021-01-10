@@ -148,7 +148,6 @@ exports.view = (req, res) => {
 
         function pushtoArray(res, datavote, datasave, datarate, callback) {
             const dataArray = [];
-
             res.map((data, index) => {
                 var getcountvote = 0;
                 var getcountsave = 0;
@@ -325,7 +324,6 @@ exports.update = (req, res) => {
     })
 }
 
-
 exports.delete = (req, res) => {
     async.waterfall([
         function checkIdPost(callback) {
@@ -382,4 +380,127 @@ exports.delete = (req, res) => {
         }
         return output.print(req, res, result);
     })
+}
+
+exports.designerData = (req, res) => {
+    async.waterfall([
+        function viewPostByUserid(callback) {
+            postModel.findAll({ where: { user_id: req.params.id } })
+                .then((res) => {
+                    if (res) {
+                        callback(null, res);
+                    } else {
+                        return callback({
+                            code: "NOT_FOUND",
+                            data: "Post not found"
+                        })
+                    }
+                }).catch(err => {
+                    return callback({
+                        code: "ERR_DATABASE",
+                        data: err
+                    });
+                });
+        },
+
+        function getCountVote(res, callback) {
+            voteModel.findAll({
+                where: { designer_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'votecount']],
+            }).then(function (datavote) {
+                callback(null, res, datavote);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
+            });
+        },
+
+        function getCountSave(res, datavote, callback) {
+            saveModel.findAll({
+                where: { designer_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'savecount']],
+            }).then(function (datasave) {
+                callback(null, res, datavote, datasave);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
+            });
+        },
+
+        function getAvgRate(res, datavote, datasave, callback) {
+            rateModel.findAll({
+                where: { designer_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('avg', Sequelize.col('data')), 'avgrate']]
+            }).then(function (datarate) {
+                callback(null, res, datavote, datasave, datarate);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                })
+            })
+        },
+
+        function pushtoArray(res, datavote, datasave, datarate, callback) {
+            const dataArray = [];
+            res.map((data, index) => {
+                var getcountvote = 0;
+                var getcountsave = 0;
+                var getavgrate = 0;
+                datavote.map((datacount, indexcount) => {
+                    const countvotegrup = datacount.dataValues;
+                    if (countvotegrup.post_id == data.id) {
+                        getcountvote = countvotegrup.votecount;
+                    }
+                });
+
+                datasave.map((valuesave, indexsave) => {
+                    const countsavegroup = valuesave.dataValues;
+                    if (countsavegroup.post_id == data.id) {
+                        getcountsave = countsavegroup.savecount;
+                    }
+                });
+
+                datarate.map((valuerate, indexrate) => {
+                    const avgrategroup = valuerate.dataValues;
+                    if (avgrategroup.post_id == data.id) {
+                        getavgrate = avgrategroup.avgrate;
+                    }
+                });
+
+                const result = {
+                    id: data.id,
+                    user_id: data.user_id,
+                    name: data.name,
+                    category: data.category,
+                    image: data.image,
+                    description: data.description,
+                    vote: getcountvote,
+                    saved: getcountsave,
+                    rate: getavgrate,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt
+                };
+                dataArray.push(result);
+            });
+            return callback({
+                code: "OK",
+                data: dataArray
+            })
+        }
+    ],
+        (err, result) => {
+            if (err) {
+                return output.print(req, res, err);
+            }
+            return output.print(req, res, result);
+        }
+    )
 }

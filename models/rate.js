@@ -16,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
   Rate.init({
     user_id: DataTypes.INTEGER,
     post_id: DataTypes.INTEGER,
-    data: DataTypes.DOUBLE
+    data: DataTypes.DOUBLE,
+    designer_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Rate',

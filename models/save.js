@@ -15,7 +15,8 @@ module.exports = (sequelize, DataTypes) => {
   };
   Save.init({
     post_id: DataTypes.INTEGER,
-    user_id: DataTypes.INTEGER
+    user_id: DataTypes.INTEGER,
+    designer_id: DataTypes.INTEGER
   }, {
     sequelize,
     modelName: 'Save',
