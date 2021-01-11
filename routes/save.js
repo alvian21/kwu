@@ -26,5 +26,6 @@ router.use((req, res, next) => {
   });
 });
 
-router.post("/", saveController.create);
+router.post("/create", saveController.create);
+router.get("/",saveController.view);
 module.exports = router;

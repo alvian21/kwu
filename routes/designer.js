@@ -27,4 +27,5 @@ router.use((req, res, next) => {
 });
 
 router.get("/link/:id", designerController.viewLink);
+router.post("/",designerController.createLink);
 module.exports = router;

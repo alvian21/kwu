@@ -68,7 +68,7 @@ exports.createLink = (req, res) => {
 
         function insertToDB(index, callback) {
             const user = req.user;
-            voteModel.create({
+            linkModel.create({
                 designer_id: user.id,
                 link_skype: req.body.link_skype,
                 link_wa: req.body.link_wa,

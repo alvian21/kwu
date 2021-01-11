@@ -30,4 +30,5 @@ router.post("/create", postController.create);
 router.get("/show/:id", postController.show);
 router.put("/update/:id", postController.update);
 router.delete("/delete/:id", postController.delete);
+router.get("/postdesigner/:id",postController.designerData);
 module.exports = router;

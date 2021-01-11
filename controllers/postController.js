@@ -9,6 +9,7 @@ const base64ToImage = require('base64-to-image');
 const postModel = require("../models/").Post;
 const voteModel = require("../models/").Vote;
 const saveModel = require("../models/").Save;
+const linkModel = require("../models/").Link;
 const rateModel = require("../models/").Rate;
 const isBase64 = require('is-base64');
 const output = require("../functions/output.js");
@@ -207,10 +208,11 @@ exports.show = (req, res) => {
             postModel.findOne({ where: { id: req.params.id } })
                 .then(res => {
                     if (res) {
-                        return callback({
-                            code: "OK",
-                            data: res
-                        })
+                        // return callback({
+                        //     code: "OK",
+                        //     data: res
+                        // })
+                        callback(null, res);
                     }
                 }).catch(err => {
                     return callback({
@@ -218,6 +220,117 @@ exports.show = (req, res) => {
                         data: err
                     });
                 });
+        },
+
+        function viewDataLink(res, callback) {
+          
+            linkModel.findOne({ where: { designer_id: res.user_id } })
+                .then(dataLink => {
+                    if (dataLink) {
+                       
+                        callback(null, res, dataLink)
+                    }
+                }).catch(err => {
+                    return callback({
+                        code: "ERR_DATABASE",
+                        data: err
+                    })
+                })
+        },
+        function getCountVote(res, dataLink, callback) {
+            voteModel.findAll({
+                where: { post_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'votecount']],
+            }).then(function (datavote) {
+                callback(null, res, dataLink, datavote);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
+            });
+        },
+
+        function getCountSave(res, dataLink, datavote, callback) {
+            saveModel.findAll({
+                where: { post_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'savecount']],
+            }).then(function (datasave) {
+                callback(null, res, dataLink, datavote, datasave);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                });
+            });
+        },
+
+        function getAvgRate(res, dataLink, datavote, datasave, callback) {
+            rateModel.findAll({
+                where: { post_id: req.params.id },
+                group: ['post_id'],
+                attributes: ['post_id', [Sequelize.fn('avg', Sequelize.col('data')), 'avgrate']]
+            }).then(function (datarate) {
+                callback(null, res, dataLink, datavote, datasave, datarate);
+            }).catch(err => {
+                return callback({
+                    code: "ERR_DATABASE",
+                    data: err
+                })
+            })
+        },
+
+        function pushtoArray(res, dataLink, datavote, datasave, datarate, callback) {
+            const dataArray = [];
+
+            var getcountvote = 0;
+            var getcountsave = 0;
+            var getavgrate = 0;
+            datavote.map((datacount, indexcount) => {
+                const countvotegrup = datacount.dataValues;
+                if (countvotegrup.post_id == res.id) {
+                    getcountvote = countvotegrup.votecount;
+                }
+            });
+
+            datasave.map((valuesave, indexsave) => {
+                const countsavegroup = valuesave.dataValues;
+                if (countsavegroup.post_id == res.id) {
+                    getcountsave = countsavegroup.savecount;
+                }
+            });
+
+            datarate.map((valuerate, indexrate) => {
+                const avgrategroup = valuerate.dataValues;
+                if (avgrategroup.post_id == res.id) {
+                    getavgrate = avgrategroup.avgrate;
+                }
+            });
+
+            const result = {
+                id: res.id,
+                user_id: res.user_id,
+                name: res.name,
+                category: res.category,
+                image: res.image,
+                description: res.description,
+                vote: getcountvote,
+                saved: getcountsave,
+                rate: getavgrate,
+                link_wa: dataLink.link_wa,
+                link_skype: dataLink.link_skype,
+                link_email: dataLink.link_email,
+                createdAt: res.createdAt,
+                updatedAt: res.updatedAt
+            };
+
+
+            return callback({
+                code: "OK",
+                data: result
+            })
         }
     ], (err, result) => {
         if (err) {
@@ -405,7 +518,7 @@ exports.designerData = (req, res) => {
 
         function getCountVote(res, callback) {
             voteModel.findAll({
-                where: { designer_id: req.params.id },
+                where: { post_id: req.params.id },
                 group: ['post_id'],
                 attributes: ['post_id', [Sequelize.fn('COUNT', 'post_id'), 'votecount']],
             }).then(function (datavote) {
