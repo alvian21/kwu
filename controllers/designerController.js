@@ -98,7 +98,7 @@ exports.createLink = (req, res) => {
 exports.viewDesigner = (req, res) => {
     async.waterfall([
         function getData(callback) {
-            designerModel.findAll({ where: { role: "designer" } })
+            userModel.findAll({ where: { role: "designer" } })
                 .then(res => {
                     return callback({
                         code: "OK",
