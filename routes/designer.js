@@ -28,4 +28,5 @@ router.use((req, res, next) => {
 
 router.get("/link/:id", designerController.viewLink);
 router.post("/",designerController.createLink);
+router.get("/listdesigner",designerController.viewDesigner);
 module.exports = router;
