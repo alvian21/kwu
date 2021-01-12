@@ -8,6 +8,7 @@ const fs = require("fs");
 const base64ToImage = require('base64-to-image');
 const postModel = require("../models/").Post;
 const voteModel = require("../models/").Vote;
+const userModel = require("../models/").User;
 const saveModel = require("../models/").Save;
 const rateModel = require("../models/").Rate;
 const linkModel = require("../models/").Link;
