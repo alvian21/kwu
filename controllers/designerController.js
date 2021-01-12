@@ -29,6 +29,11 @@ exports.viewLink = (req, res) => {
                             code: "OK",
                             data: res
                         })
+                    }else{
+                        return callback({
+                            code:"NOT_FOUND",
+                            data:res
+                        })
                     }
                 }).catch(err => {
                     return callback({

@@ -4,6 +4,7 @@ const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const path = require("path");
 const fs = require("fs");
+const isBase64 = require('is-base64');
 const userModel = require("../models/").User;
 const output = require("../functions/output.js");
 const missingKey = require("../functions/missingKey");
@@ -22,6 +23,7 @@ exports.signUp = (req, res) => {
           email: req.body.email,
           password: req.body.password,
           role: req.body.role,
+          image: req.body.image
         });
 
         if (missingKeys.length !== 0) {
@@ -124,6 +126,24 @@ exports.signUp = (req, res) => {
         }
       },
 
+      function base64_decodeImage(index, callback) {
+        const pathFile = Date.now() + ".png";
+        const base64Data = req.body.image.replace(/^data:image\/png;base64,/, "");
+        if (isBase64(base64Data)) {
+            fs.writeFileSync(path.resolve(process.env.CDN + "user/" + pathFile), base64Data, 'base64', function (err) {
+                console.log(err)
+            });
+            req.body.image = pathFile;
+            callback(null, true);
+        } else {
+            return callback({
+                code: "INVALID_REQUEST",
+                data: "base64 not valid"
+            })
+        }
+
+    },
+
       function insert(index, callback) {
         userModel
           .create({
@@ -132,6 +152,7 @@ exports.signUp = (req, res) => {
             email: req.body.email,
             password: req.body.password,
             role: req.body.role,
+            image: req.body.image
           })
           .then((res) => {
             if (res) {

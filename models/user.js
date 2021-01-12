@@ -21,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
     role: DataTypes.STRING,
     chat_id: DataTypes.INTEGER,
     cr_id: DataTypes.INTEGER,
-    token: DataTypes.STRING
+    token: DataTypes.STRING,
+    image: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'User',
