@@ -26,7 +26,7 @@ router.use((req, res, next) => {
   });
 });
 
-router.post("/create",shopController.create);
-router.get("/show/:id",shopController.detail);
-router.get("/",shopController.view);
+router.post("/create", shopController.create);
+router.get("/show/:id", shopController.detail);
+router.get("/", shopController.view);
 module.exports = router;
