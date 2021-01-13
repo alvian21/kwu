@@ -11,6 +11,7 @@ const voteModel = require("../models/").Vote;
 const saveModel = require("../models/").Save;
 const linkModel = require("../models/").Link;
 const rateModel = require("../models/").Rate;
+const orderModel = require("../models/").Order;
 const isBase64 = require('is-base64');
 const output = require("../functions/output.js");
 const missingKey = require("../functions/missingKey");
@@ -223,11 +224,11 @@ exports.show = (req, res) => {
         },
 
         function viewDataLink(res, callback) {
-          
+
             linkModel.findOne({ where: { designer_id: res.user_id } })
                 .then(dataLink => {
                     if (dataLink) {
-                       
+
                         callback(null, res, dataLink)
                     }
                 }).catch(err => {
@@ -282,7 +283,19 @@ exports.show = (req, res) => {
             })
         },
 
-        function pushtoArray(res, dataLink, datavote, datasave, datarate, callback) {
+        function getDataOrder(res, dataLink, datavote, datasave, datarate, callback) {
+            orderModel.findOne({ where: { designer_id: res.user_id } })
+                .then(resOrder => {
+                    callback(null, res, dataLink, datavote, datasave, datarate, resOrder);
+                }).catch(err => {
+                    return callback({
+                        code: "ERR_DATABASE",
+                        data: err
+                    })
+                })
+        },
+
+        function pushtoArray(res, dataLink, datavote, datasave, datarate, resOrder, callback) {
             const dataArray = [];
 
             var getcountvote = 0;
@@ -319,6 +332,7 @@ exports.show = (req, res) => {
                 vote: getcountvote,
                 saved: getcountsave,
                 rate: getavgrate,
+                order: resOrder.data,
                 link_wa: dataLink.link_wa,
                 link_skype: dataLink.link_skype,
                 link_email: dataLink.link_email,
@@ -560,6 +574,10 @@ exports.designerData = (req, res) => {
                 })
             })
         },
+
+        // function getOrderData(req, datavote, datasave, datarate, callback){
+        //     orderModel.find
+        // },
 
         function pushtoArray(res, datavote, datasave, datarate, callback) {
             const dataArray = [];
