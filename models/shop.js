@@ -18,6 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       shop_link: DataTypes.STRING,
       shop_logo: DataTypes.STRING,
       shop_name: DataTypes.STRING,
+      image: DataTypes.STRING,
     },
     {
       sequelize,
